@@ -1,0 +1,44 @@
+name: Build AudioScribeAI APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Scarica repository
+        uses: actions/checkout@v4
+
+      - name: Estrai progetto
+        run: unzip -o AudioScribeAI-source.zip
+
+      - name: Configura Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configura Android
+        uses: android-actions/setup-android@v3
+
+      - name: Installa Android SDK
+        run: yes | sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Configura Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Compila APK
+        working-directory: AudioScribeAI
+        run: gradle --no-daemon assembleDebug
+
+      - name: Salva APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AudioScribeAI-debug
+          path: AudioScribeAI/app/build/outputs/apk/debug/app-debug.apk
